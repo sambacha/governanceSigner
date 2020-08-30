@@ -1,7 +1,5 @@
 #!/bin/sh
 
-
-
 me=`basename "$0"`
 
 if [ "$me" = ".sanity.sh" ];then
@@ -12,24 +10,26 @@ fi
 bold=$(tput bold)
 normal=$(tput sgr0)
 
+# Docker
 hash docker 2>/dev/null || {
   echo >&2 "This script requires Docker but it's not installed."
-  echo >&2 "Refer to documentation to fulfill requirements."
+  echo >&2 "Please Install the requirements."
   exit 1
 }
 
+# Docker Compose
 hash docker-compose 2>/dev/null || {
-  echo >&2 "This script requires Docker compose but it's not installed."
-  echo >&2 "Refer to documentation to fulfill requirements."
+  echo >&2 "This script requires Docker Compose"
+  echo >&2 "Please Install the requirements."
   exit 1
 }
 
-docker info &>/dev/null
-if [ "$?" -eq "1" ];then
-  echo >&2 "This script requires Docker daemon to run. Start Docker and try again."
-  echo >&2 "Refer to documentation to fulfill requirements."
+# Java 11
+hash java 2>/dev/null || {
+  echo >&2 "This script requires Java JDK 11"
+  echo >&2 "Please Install the requirements."
   exit 1
-fi
 
+}
 
 current_dir=${PWD##*/}

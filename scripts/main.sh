@@ -9,20 +9,62 @@ PARAMS=""
 
 displayUsage()
 {
-echo -e "\033[31;3m████████████████████████████████████████████████████████████████████████████████████████████"
-echo -e "\033[31;3m██ THIS IS A NOTICE OF MONITORING OF THE FREIGHT TRUST NETWORK (FTN) INFORMATION SYSTEMS  ██"
-echo -e "\033[31;3m████████████████████████████████████████████████████████████████████████████████████████████"
+echo -e "\033[31;3m███████████████████████"
+echo -e "\033[31;3m██ GOVERNANCE SIGNER ██"
+echo -e "\033[31;3m███████████████████████"
 sleep 2
-echo -e "\033[31;3m████████████████████████████████████████████████████████████████████████████████████████████"
-echo -e "\033[31;3m██   BY CONNECTING TO AND/OR USING THIS 'NETWORK' YOU CERTIFY THAT YOU AGREE TO ABIDE     ██"
-echo -e "\033[31;3m██      BY THE RULES OF BEHAVIOR AND THE OMNIBUS RULEBOOK v5.0.0 & WARNING BANNER.        ██"
-echo -e "\033[31;3m████████████████████████████████████████████████████████████████████████████████████████████"
 echo -e "\n"
   echo "You can select the consensus mechanism to use.\n"
   echo "Usage: ${me} [OPTIONS]"
-  echo "    -c <mainnet|testnet|eth> : the network you want to connect to
-                                       on your network, default is ethash"
-  echo "    -e                       : setup ELK with the network."
-  echo "    -s                       : test ethsigner with the rpcnode (available when using a POA consensus algorithm. Note the -s option must be preceeded by the -c option"
+  echo "    -c <mainnet|testnet|other> : the network you want to connect to
+                                       on your network, default is MAINNET"
+  echo "    -e                       : setup"
+  echo "    -s                       : test ethsigner with local rpcnode"
   exit 0
 }
+
+#mainnet='mainnet'
+eth='mainnet' #
+rinkeby='testnet' # 
+
+composeFile="docker-compose"
+
+while getopts "hesc:" o; do
+  case "${o}" in
+    h)
+      displayUsage
+      ;;
+    c)
+      algo=${OPTARG}
+      case "${algo}" in
+        mainnet|testnet|other)
+          export NETWORK="${algo}"
+          export RPC_API="${!algo}"
+          export CLIENT_VERSION="${BESU_VERSION}"
+          composeFile="${composeFile}_poa"
+          ;;
+        ethash)
+          ;;
+        *)
+          echo "Error: Unsupported consensus value." >&2
+          displayUsage
+      esac
+      ;;
+    e)
+      elk_compose="${composeFile/docker-compose/docker-compose_elk}"
+      composeFile="$elk_compose"
+      ;;
+    s)
+      if [[ $composeFile == *"poa"* ]]; then
+        signer_compose="${composeFile/poa/poa_signer}"
+        composeFile="$signer_compose"
+      else
+        echo "Error: Unsupported consensus value." >&2
+        displayUsage
+      fi
+      ;;
+    *)
+      displayUsage
+    ;;
+  esac
+done
